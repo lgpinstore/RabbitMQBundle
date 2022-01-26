@@ -37,11 +37,11 @@ class OldSoundRabbitMqExtension extends Extension
     {
         $this->container = $container;
 
-        $loader = new XmlFileLoader($this->container, new FileLocator(array(__DIR__ . '/../Resources/config')));
+        $loader = new XmlFileLoader($this->container, new FileLocator(array(__DIR__.'/../Resources/config')));
         $loader->load('rabbitmq.xml');
 
         $configuration = $this->getConfiguration($configs, $container);
-        $this->config = $this->processConfiguration($configuration, $configs);
+        $this->config  = $this->processConfiguration($configuration, $configs);
 
         $this->collectorEnabled = $this->config['enable_collector'];
 
@@ -78,13 +78,11 @@ class OldSoundRabbitMqExtension extends Extension
     {
         foreach ($this->config['connections'] as $key => $connection) {
             $connectionSuffix = $connection['use_socket'] ? 'socket_connection.class' : 'connection.class';
-            $classParam =
-                $connection['lazy']
-                    ? '%old_sound_rabbit_mq.lazy.'.$connectionSuffix.'%'
-                    : '%old_sound_rabbit_mq.'.$connectionSuffix.'%';
+            $classParam       = $connection['lazy'] ? '%old_sound_rabbit_mq.lazy.'.$connectionSuffix.'%' : '%old_sound_rabbit_mq.'.$connectionSuffix.'%';
 
             $definition = new Definition('%old_sound_rabbit_mq.connection_factory.class%', array(
-                $classParam, $connection,
+                $classParam,
+                $connection,
             ));
             if (isset($connection['connection_parameters_provider'])) {
                 $definition->addArgument(new Reference($connection['connection_parameters_provider']));
@@ -144,12 +142,15 @@ class OldSoundRabbitMqExtension extends Extension
                 $definition->addTag('old_sound_rabbit_mq.base_amqp');
                 $definition->addTag('old_sound_rabbit_mq.producer');
                 //this producer doesn't define an exchange -> using AMQP Default
-                if (!isset($producer['exchange_options'])) {
+                if ( ! isset($producer['exchange_options'])) {
                     $producer['exchange_options'] = $this->getDefaultExchangeOptions();
                 }
-                $definition->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($producer['exchange_options'])));
+                $definition->addMethodCall(
+                    'setExchangeOptions',
+                    array($this->normalizeArgumentKeys($producer['exchange_options']))
+                );
                 //this producer doesn't define a queue -> using AMQP Default
-                if (!isset($producer['queue_options'])) {
+                if ( ! isset($producer['queue_options'])) {
                     $producer['queue_options'] = $this->getDefaultQueueOptions();
                 }
                 $definition->addMethodCall('setQueueOptions', array($producer['queue_options']));
@@ -157,7 +158,7 @@ class OldSoundRabbitMqExtension extends Extension
                 if ($this->collectorEnabled) {
                     $this->injectLoggedChannel($definition, $key, $producer['connection']);
                 }
-                if (!$producer['auto_setup_fabric']) {
+                if ( ! $producer['auto_setup_fabric']) {
                     $definition->addMethodCall('disableAutoSetupFabric');
                 }
 
@@ -188,22 +189,28 @@ class OldSoundRabbitMqExtension extends Extension
             $definition->addTag('old_sound_rabbit_mq.base_amqp');
             $definition->addTag('old_sound_rabbit_mq.consumer');
             //this consumer doesn't define an exchange -> using AMQP Default
-            if (!isset($consumer['exchange_options'])) {
+            if ( ! isset($consumer['exchange_options'])) {
                 $consumer['exchange_options'] = $this->getDefaultExchangeOptions();
             }
-            $definition->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($consumer['exchange_options'])));
+            $definition->addMethodCall(
+                'setExchangeOptions',
+                array($this->normalizeArgumentKeys($consumer['exchange_options']))
+            );
             //this consumer doesn't define a queue -> using AMQP Default
-            if (!isset($consumer['queue_options'])) {
+            if ( ! isset($consumer['queue_options'])) {
                 $consumer['queue_options'] = $this->getDefaultQueueOptions();
             }
-            $definition->addMethodCall('setQueueOptions', array($this->normalizeArgumentKeys($consumer['queue_options'])));
+            $definition->addMethodCall(
+                'setQueueOptions',
+                array($this->normalizeArgumentKeys($consumer['queue_options']))
+            );
             $definition->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
 
             if (array_key_exists('qos_options', $consumer)) {
                 $definition->addMethodCall('setQosOptions', array(
                     $consumer['qos_options']['prefetch_size'],
                     $consumer['qos_options']['prefetch_count'],
-                    $consumer['qos_options']['global']
+                    $consumer['qos_options']['global'],
                 ));
             }
 
@@ -214,16 +221,12 @@ class OldSoundRabbitMqExtension extends Extension
                 $definition->addMethodCall('setIdleTimeoutExitCode', array($consumer['idle_timeout_exit_code']));
             }
             if (isset($consumer['graceful_max_execution'])) {
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
-                    array($consumer['graceful_max_execution']['timeout'])
-                );
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionTimeoutExitCode',
-                    array($consumer['graceful_max_execution']['exit_code'])
-                );
+                $definition->addMethodCall('setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
+                    array($consumer['graceful_max_execution']['timeout']));
+                $definition->addMethodCall('setGracefulMaxExecutionTimeoutExitCode',
+                    array($consumer['graceful_max_execution']['exit_code']));
             }
-            if (!$consumer['auto_setup_fabric']) {
+            if ( ! $consumer['auto_setup_fabric']) {
                 $definition->addMethodCall('disableAutoSetupFabric');
             }
 
@@ -245,42 +248,38 @@ class OldSoundRabbitMqExtension extends Extension
     protected function loadMultipleConsumers()
     {
         foreach ($this->config['multiple_consumers'] as $key => $consumer) {
-            $queues = array();
+            $queues    = array();
             $callbacks = array();
 
             if (empty($consumer['queues']) && empty($consumer['queues_provider'])) {
                 throw new InvalidConfigurationException(
-                    "Error on loading $key multiple consumer. " .
-                    "Either 'queues' or 'queues_provider' parameters should be defined."
+                    "Error on loading $key multiple consumer. "."Either 'queues' or 'queues_provider' parameters should be defined."
                 );
             }
 
             foreach ($consumer['queues'] as $queueName => $queueOptions) {
-                $queues[$queueOptions['name']] = $queueOptions;
+                $queues[$queueOptions['name']]             = $queueOptions;
                 $queues[$queueOptions['name']]['callback'] = array(new Reference($queueOptions['callback']), 'execute');
-                $callbacks[] = $queueOptions['callback'];
+                $callbacks[]                               = $queueOptions['callback'];
             }
 
             $definition = new Definition('%old_sound_rabbit_mq.multi_consumer.class%');
-            $definition
-                ->setPublic(true)
-                ->addTag('old_sound_rabbit_mq.base_amqp')
-                ->addTag('old_sound_rabbit_mq.multi_consumer')
-                ->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($consumer['exchange_options'])))
-                ->addMethodCall('setQueues', array($this->normalizeArgumentKeys($queues)));
+            $definition->setPublic(true)->addTag('old_sound_rabbit_mq.base_amqp')->addTag(
+                    'old_sound_rabbit_mq.multi_consumer'
+                )->addMethodCall(
+                    'setExchangeOptions',
+                    array($this->normalizeArgumentKeys($consumer['exchange_options']))
+                )->addMethodCall('setQueues', array($this->normalizeArgumentKeys($queues)));
 
             if ($consumer['queues_provider']) {
-                $definition->addMethodCall(
-                    'setQueuesProvider',
-                    array(new Reference($consumer['queues_provider']))
-                );
+                $definition->addMethodCall('setQueuesProvider', array(new Reference($consumer['queues_provider'])));
             }
 
             if (array_key_exists('qos_options', $consumer)) {
                 $definition->addMethodCall('setQosOptions', array(
                     $consumer['qos_options']['prefetch_size'],
                     $consumer['qos_options']['prefetch_count'],
-                    $consumer['qos_options']['global']
+                    $consumer['qos_options']['global'],
                 ));
             }
 
@@ -291,16 +290,12 @@ class OldSoundRabbitMqExtension extends Extension
                 $definition->addMethodCall('setIdleTimeoutExitCode', array($consumer['idle_timeout_exit_code']));
             }
             if (isset($consumer['graceful_max_execution'])) {
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
-                    array($consumer['graceful_max_execution']['timeout'])
-                );
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionTimeoutExitCode',
-                    array($consumer['graceful_max_execution']['exit_code'])
-                );
+                $definition->addMethodCall('setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
+                    array($consumer['graceful_max_execution']['timeout']));
+                $definition->addMethodCall('setGracefulMaxExecutionTimeoutExitCode',
+                    array($consumer['graceful_max_execution']['exit_code']));
             }
-            if (!$consumer['auto_setup_fabric']) {
+            if ( ! $consumer['auto_setup_fabric']) {
                 $definition->addMethodCall('disableAutoSetupFabric');
             }
 
@@ -330,32 +325,28 @@ class OldSoundRabbitMqExtension extends Extension
 
             if (empty($consumer['queue_options_provider'])) {
                 throw new InvalidConfigurationException(
-                    "Error on loading $key dynamic consumer. " .
-                    "'queue_provider' parameter should be defined."
+                    "Error on loading $key dynamic consumer. "."'queue_provider' parameter should be defined."
                 );
             }
 
             $definition = new Definition('%old_sound_rabbit_mq.dynamic_consumer.class%');
-            $definition
-                ->setPublic(true)
-                ->addTag('old_sound_rabbit_mq.base_amqp')
-                ->addTag('old_sound_rabbit_mq.consumer')
-                ->addTag('old_sound_rabbit_mq.dynamic_consumer')
-                ->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($consumer['exchange_options'])))
-                ->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
+            $definition->setPublic(true)->addTag('old_sound_rabbit_mq.base_amqp')->addTag(
+                    'old_sound_rabbit_mq.consumer'
+                )->addTag('old_sound_rabbit_mq.dynamic_consumer')->addMethodCall(
+                    'setExchangeOptions',
+                    array($this->normalizeArgumentKeys($consumer['exchange_options']))
+                )->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'execute')));
 
             if (array_key_exists('qos_options', $consumer)) {
                 $definition->addMethodCall('setQosOptions', array(
                     $consumer['qos_options']['prefetch_size'],
                     $consumer['qos_options']['prefetch_count'],
-                    $consumer['qos_options']['global']
+                    $consumer['qos_options']['global'],
                 ));
             }
 
-            $definition->addMethodCall(
-                'setQueueOptionsProvider',
-                array(new Reference($consumer['queue_options_provider']))
-            );
+            $definition->addMethodCall('setQueueOptionsProvider',
+                array(new Reference($consumer['queue_options_provider'])));
 
             if (isset($consumer['idle_timeout'])) {
                 $definition->addMethodCall('setIdleTimeout', array($consumer['idle_timeout']));
@@ -364,16 +355,12 @@ class OldSoundRabbitMqExtension extends Extension
                 $definition->addMethodCall('setIdleTimeoutExitCode', array($consumer['idle_timeout_exit_code']));
             }
             if (isset($consumer['graceful_max_execution'])) {
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
-                    array($consumer['graceful_max_execution']['timeout'])
-                );
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionTimeoutExitCode',
-                    array($consumer['graceful_max_execution']['exit_code'])
-                );
+                $definition->addMethodCall('setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
+                    array($consumer['graceful_max_execution']['timeout']));
+                $definition->addMethodCall('setGracefulMaxExecutionTimeoutExitCode',
+                    array($consumer['graceful_max_execution']['exit_code']));
             }
-            if (!$consumer['auto_setup_fabric']) {
+            if ( ! $consumer['auto_setup_fabric']) {
                 $definition->addMethodCall('disableAutoSetupFabric');
             }
 
@@ -398,25 +385,25 @@ class OldSoundRabbitMqExtension extends Extension
         foreach ($this->config['batch_consumers'] as $key => $consumer) {
             $definition = new Definition('%old_sound_rabbit_mq.batch_consumer.class%');
 
-            if (!isset($consumer['exchange_options'])) {
+            if ( ! isset($consumer['exchange_options'])) {
                 $consumer['exchange_options'] = $this->getDefaultExchangeOptions();
             }
 
-            $definition
-                ->setPublic(true)
-                ->addTag('old_sound_rabbit_mq.base_amqp')
-                ->addTag('old_sound_rabbit_mq.batch_consumer')
-                ->addMethodCall('setTimeoutWait', array($consumer['timeout_wait']))
-                ->addMethodCall('setPrefetchCount', array($consumer['qos_options']['prefetch_count']))
-                ->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'batchExecute')))
-                ->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($consumer['exchange_options'])))
-                ->addMethodCall('setQueueOptions', array($this->normalizeArgumentKeys($consumer['queue_options'])))
-                ->addMethodCall('setQosOptions', array(
+            $definition->setPublic(true)->addTag('old_sound_rabbit_mq.base_amqp')->addTag(
+                    'old_sound_rabbit_mq.batch_consumer'
+                )->addMethodCall('setTimeoutWait', array($consumer['timeout_wait']))->addMethodCall(
+                    'setPrefetchCount',
+                    array($consumer['qos_options']['prefetch_count'])
+                )->addMethodCall('setCallback', array(array(new Reference($consumer['callback']), 'batchExecute'))
+                )->addMethodCall(
+                    'setExchangeOptions',
+                    array($this->normalizeArgumentKeys($consumer['exchange_options']))
+                )->addMethodCall('setQueueOptions', array($this->normalizeArgumentKeys($consumer['queue_options']))
+                )->addMethodCall('setQosOptions', array(
                     $consumer['qos_options']['prefetch_size'],
                     $consumer['qos_options']['prefetch_count'],
-                    $consumer['qos_options']['global']
-                ))
-            ;
+                    $consumer['qos_options']['global'],
+                ));
 
             if (isset($consumer['idle_timeout_exit_code'])) {
                 $definition->addMethodCall('setIdleTimeoutExitCode', array($consumer['idle_timeout_exit_code']));
@@ -427,13 +414,11 @@ class OldSoundRabbitMqExtension extends Extension
             }
 
             if (isset($consumer['graceful_max_execution'])) {
-                $definition->addMethodCall(
-                    'setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
-                    array($consumer['graceful_max_execution']['timeout'])
-                );
+                $definition->addMethodCall('setGracefulMaxExecutionDateTimeFromSecondsInTheFuture',
+                    array($consumer['graceful_max_execution']['timeout']));
             }
 
-            if (!$consumer['auto_setup_fabric']) {
+            if ( ! $consumer['auto_setup_fabric']) {
                 $definition->addMethodCall('disableAutoSetupFabric');
             }
 
@@ -457,13 +442,11 @@ class OldSoundRabbitMqExtension extends Extension
     protected function loadAnonConsumers()
     {
         foreach ($this->config['anon_consumers'] as $key => $anon) {
-            $definition = new Definition('%old_sound_rabbit_mq.anon_consumer.class%');     
-            $definition
-                ->setPublic(true)
-                ->addTag('old_sound_rabbit_mq.base_amqp')
-                ->addTag('old_sound_rabbit_mq.anon_consumer')
-                ->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($anon['exchange_options'])))
-                ->addMethodCall('setCallback', array(array(new Reference($anon['callback']), 'execute')));
+            $definition = new Definition('%old_sound_rabbit_mq.anon_consumer.class%');
+            $definition->setPublic(true)->addTag('old_sound_rabbit_mq.base_amqp')->addTag(
+                    'old_sound_rabbit_mq.anon_consumer'
+                )->addMethodCall('setExchangeOptions', array($this->normalizeArgumentKeys($anon['exchange_options']))
+                )->addMethodCall('setCallback', array(array(new Reference($anon['callback']), 'execute')));
             $this->injectConnection($definition, $anon['connection']);
             if ($this->collectorEnabled) {
                 $this->injectLoggedChannel($definition, $key, $anon['connection']);
@@ -501,15 +484,17 @@ class OldSoundRabbitMqExtension extends Extension
             }
             $config['arguments'] = $newArguments;
         }
+
         return $config;
     }
 
     /**
      * Support for arguments provided as string. Support for old configuration files.
      *
-     * @deprecated
      * @param string $arguments
+     *
      * @return array
+     * @deprecated
      */
     private function argumentsStringAsArray($arguments)
     {
@@ -518,7 +503,7 @@ class OldSoundRabbitMqExtension extends Extension
         $argumentPairs = explode(',', $arguments);
         foreach ($argumentPairs as $argument) {
             $argumentPair = explode(':', $argument);
-            $type = 'S';
+            $type         = 'S';
             if (isset($argumentPair[2])) {
                 $type = $argumentPair[2];
             }
@@ -533,9 +518,10 @@ class OldSoundRabbitMqExtension extends Extension
         foreach ($this->config['rpc_clients'] as $key => $client) {
             $definition = new Definition('%old_sound_rabbit_mq.rpc_client.class%');
             $definition->setLazy($client['lazy']);
-            $definition
-                ->addTag('old_sound_rabbit_mq.rpc_client')
-                ->addMethodCall('initClient', array($client['expect_serialized_response']));
+            $definition->addTag('old_sound_rabbit_mq.rpc_client')->addMethodCall(
+                    'initClient',
+                    array($client['expect_serialized_response'])
+                );
             $this->injectConnection($definition, $client['connection']);
             if ($this->collectorEnabled) {
                 $this->injectLoggedChannel($definition, $key, $client['connection']);
@@ -556,12 +542,12 @@ class OldSoundRabbitMqExtension extends Extension
     {
         foreach ($this->config['rpc_servers'] as $key => $server) {
             $definition = new Definition('%old_sound_rabbit_mq.rpc_server.class%');
-            $definition
-                ->setPublic(true)
-                ->addTag('old_sound_rabbit_mq.base_amqp')
-                ->addTag('old_sound_rabbit_mq.rpc_server')
-                ->addMethodCall('initServer', array($key))
-                ->addMethodCall('setCallback', array(array(new Reference($server['callback']), 'execute')));
+            $definition->setPublic(true)->addTag('old_sound_rabbit_mq.base_amqp')->addTag(
+                    'old_sound_rabbit_mq.rpc_server'
+                )->addMethodCall('initServer', array($key))->addMethodCall(
+                    'setCallback',
+                    array(array(new Reference($server['callback']), 'execute'))
+                );
             $this->injectConnection($definition, $server['connection']);
             if ($this->collectorEnabled) {
                 $this->injectLoggedChannel($definition, $key, $server['connection']);
@@ -570,7 +556,7 @@ class OldSoundRabbitMqExtension extends Extension
                 $definition->addMethodCall('setQosOptions', array(
                     $server['qos_options']['prefetch_size'],
                     $server['qos_options']['prefetch_count'],
-                    $server['qos_options']['global']
+                    $server['qos_options']['global'],
                 ));
             }
             if (array_key_exists('exchange_options', $server)) {
@@ -588,11 +574,9 @@ class OldSoundRabbitMqExtension extends Extension
 
     protected function injectLoggedChannel(Definition $definition, $name, $connectionName)
     {
-        $id = sprintf('old_sound_rabbit_mq.channel.%s', $name);
+        $id      = sprintf('old_sound_rabbit_mq.channel.%s', $name);
         $channel = new Definition('%old_sound_rabbit_mq.logged.channel.class%');
-        $channel
-            ->setPublic(false)
-            ->addTag('old_sound_rabbit_mq.logged_channel');
+        $channel->setPublic(false)->addTag('old_sound_rabbit_mq.logged_channel');
         $this->injectConnection($channel, $connectionName);
 
         $this->container->setDefinition($id, $channel);
@@ -606,7 +590,7 @@ class OldSoundRabbitMqExtension extends Extension
         $definition->addArgument(new Reference(sprintf('old_sound_rabbit_mq.connection.%s', $connectionName)));
     }
 
-    public function getAlias()
+    public function getAlias(): string
     {
         return 'old_sound_rabbit_mq';
     }
@@ -619,12 +603,12 @@ class OldSoundRabbitMqExtension extends Extension
      */
     protected function addDequeuerAwareCall($callback, $name)
     {
-        if (!$this->container->has($callback)) {
+        if ( ! $this->container->has($callback)) {
             return;
         }
 
         $callbackDefinition = $this->container->findDefinition($callback);
-        $refClass = new \ReflectionClass($callbackDefinition->getClass());
+        $refClass           = new \ReflectionClass($callbackDefinition->getClass());
         if ($refClass->implementsInterface('OldSound\RabbitMqBundle\RabbitMq\DequeuerAwareInterface')) {
             $callbackDefinition->addMethodCall('setDequeuer', array(new Reference($name)));
         }
@@ -633,9 +617,12 @@ class OldSoundRabbitMqExtension extends Extension
     private function injectLogger(Definition $definition)
     {
         $definition->addTag('monolog.logger', array(
-            'channel' => 'phpamqplib'
+            'channel' => 'phpamqplib',
         ));
-        $definition->addMethodCall('setLogger', array(new Reference('logger', ContainerInterface::IGNORE_ON_INVALID_REFERENCE)));
+        $definition->addMethodCall(
+            'setLogger',
+            array(new Reference('logger', ContainerInterface::IGNORE_ON_INVALID_REFERENCE))
+        );
     }
 
     /**
@@ -646,10 +633,10 @@ class OldSoundRabbitMqExtension extends Extension
     protected function getDefaultExchangeOptions()
     {
         return array(
-            'name' => '',
-            'type' => 'direct',
+            'name'    => '',
+            'type'    => 'direct',
             'passive' => true,
-            'declare' => false
+            'declare' => false,
         );
     }
 
@@ -661,8 +648,8 @@ class OldSoundRabbitMqExtension extends Extension
     protected function getDefaultQueueOptions()
     {
         return array(
-            'name' => '',
-            'declare' => false
+            'name'    => '',
+            'declare' => false,
         );
     }
 }
