@@ -28,7 +28,7 @@ class Configuration implements ConfigurationInterface
         $this->name = $name;
     }
 
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder() : TreeBuilder
     {
         $tree = new TreeBuilder($this->name);
         $rootNode = \method_exists('Symfony\Component\Config\Definition\Builder\TreeBuilder', 'getRootNode') ? $tree->getRootNode() : $tree->root($this->name);
@@ -216,7 +216,7 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
     }
-    
+
     protected function addDynamicConsumers(ArrayNodeDefinition $node)
     {
         $node
