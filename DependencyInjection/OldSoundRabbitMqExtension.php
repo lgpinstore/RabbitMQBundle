@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 /**
  * OldSoundRabbitMqExtension.
@@ -69,7 +70,7 @@ class OldSoundRabbitMqExtension extends Extension
         }
     }
 
-    public function getConfiguration(array $config, ContainerBuilder $container)
+    public function getConfiguration(array $config, ContainerBuilder $container): ?ConfigurationInterface
     {
         return new Configuration($this->getAlias());
     }
