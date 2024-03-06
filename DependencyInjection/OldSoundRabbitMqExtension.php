@@ -34,7 +34,7 @@ class OldSoundRabbitMqExtension extends Extension
 
     private $config = array();
 
-    public function load(array $configs, ContainerBuilder $container)
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $this->container = $container;
 

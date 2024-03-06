@@ -18,7 +18,7 @@
     }
   ],
   "require": {
-    "php": "^7.0|^8.0|^8.1",
+    "php": "^8.3",
     "ext-curl": "*",
     "symfony/dependency-injection": "^5.0|^6.0",
     "symfony/event-dispatcher": "^5.0|^6.0",
