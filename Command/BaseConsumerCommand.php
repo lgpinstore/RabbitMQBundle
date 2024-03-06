@@ -35,7 +35,7 @@ abstract class BaseConsumerCommand extends BaseRabbitMqCommand
         // TODO: Implement restarting of consumer
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 

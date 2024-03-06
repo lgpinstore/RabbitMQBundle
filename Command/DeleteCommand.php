@@ -13,7 +13,7 @@ use Symfony\Component\Console\Question\ConfirmationQuestion;
  */
 class DeleteCommand extends ConsumerCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         $this->addArgument('name', InputArgument::REQUIRED, 'Consumer Name')
              ->setDescription('Delete a consumer\'s queue')

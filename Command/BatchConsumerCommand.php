@@ -29,7 +29,7 @@ final class BatchConsumerCommand extends BaseRabbitMqCommand
         }
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 

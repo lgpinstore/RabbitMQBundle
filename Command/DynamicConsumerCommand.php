@@ -2,7 +2,7 @@
 
 /**
  * DynamicConsumerCommand
- * 
+ *
  * The context argument is passed to the consumer instance
  * which can decide about the queue and routings it uses.
  *
@@ -14,7 +14,7 @@ use Symfony\Component\Console\Input\InputArgument;
 
 class DynamicConsumerCommand extends BaseConsumerCommand
 {
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
 
