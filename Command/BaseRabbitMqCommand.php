@@ -8,22 +8,14 @@ use Symfony\Component\Console\Command\Command;
 
 abstract class BaseRabbitMqCommand extends Command implements ContainerAwareInterface
 {
-    /**
-     * @var ContainerInterface
-     */
-    protected $container;
 
-    /**
-     * {@inheritDoc}
-     */
-    public function setContainer(ContainerInterface $container = null)
+    protected ContainerInterface $container;
+
+    public function setContainer(ContainerInterface $container = null): void
     {
         $this->container = $container;
     }
 
-    /**
-     * @return ContainerInterface
-     */
     public function getContainer()
     {
         return $this->container;
