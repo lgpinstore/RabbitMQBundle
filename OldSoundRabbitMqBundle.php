@@ -6,9 +6,10 @@ use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use OldSound\RabbitMqBundle\DependencyInjection\Compiler\InjectEventDispatcherPass;
 use OldSound\RabbitMqBundle\DependencyInjection\Compiler\RegisterPartsPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 
-class OldSoundRabbitMqBundle extends AbstractBundle
+class OldSoundRabbitMqBundle extends Bundle
 {
     public function build(ContainerBuilder $container): void
     {

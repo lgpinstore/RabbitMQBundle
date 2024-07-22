@@ -23,8 +23,7 @@
     "symfony/config": "^5.0|^6.0|^7.0|^7.1",
     "symfony/yaml": "^5.0|^6.0|^7.0|^7.1",
     "symfony/console": "^5.0|^6.0|^7.0|^7.1",
-    "php-amqplib/php-amqplib": "^2.12",
-    "psr/log": "^1.1",
+    "php-amqplib/php-amqplib": "^2.12"",
     "symfony/http-kernel": "^4.3|^5.0|^6.0|^7.0|^7.1"
   },
   "require-dev": {
