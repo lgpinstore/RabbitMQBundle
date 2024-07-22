@@ -28,7 +28,7 @@ class PurgeConsumerCommand extends ConsumerCommand
      *
      * @return void
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $noConfirmation = (bool) $input->getOption('no-confirmation');
 

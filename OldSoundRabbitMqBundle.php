@@ -2,12 +2,13 @@
 
 namespace OldSound\RabbitMqBundle;
 
+use Symfony\Component\HttpKernel\Bundle\AbstractBundle;
 use OldSound\RabbitMqBundle\DependencyInjection\Compiler\InjectEventDispatcherPass;
 use OldSound\RabbitMqBundle\DependencyInjection\Compiler\RegisterPartsPass;
-use Symfony\Component\HttpKernel\Bundle\Bundle;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-class OldSoundRabbitMqBundle extends Bundle
+
+class OldSoundRabbitMqBundle extends AbstractBundle
 {
     public function build(ContainerBuilder $container): void
     {
