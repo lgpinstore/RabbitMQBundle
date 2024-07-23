@@ -29,7 +29,7 @@
             <argument type="collection" />
             <tag name="data_collector" template="@OldSoundRabbitMq/Collector/collector.html.twig" id="rabbit_mq" />
         </service>
-        
+
         <service id="old_sound_rabbit_mq.parts_holder" class="%old_sound_rabbit_mq.parts_holder.class%" public="true" />
 
         <service id="old_sound_rabbit_mq.anon_consumer_command" class="OldSound\RabbitMqBundle\Command\AnonConsumerCommand">
@@ -41,6 +41,7 @@
         </service>
 
         <service id="old_sound_rabbit_mq.consumer_command" class="OldSound\RabbitMqBundle\Command\ConsumerCommand">
+            <argument key="$container" type="service" id="service_container"/>
             <tag name="console.command" command="rabbitmq:consumer" />
         </service>
 
