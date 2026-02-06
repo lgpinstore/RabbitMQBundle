@@ -40,7 +40,7 @@ class Producer extends BaseAmqp implements ProducerInterface
      * @param array $additionalProperties
      * @param array $headers
      */
-    public function publish($msgBody, $routingKey = '', $additionalProperties = array(), array $headers = null)
+    public function publish($msgBody, $routingKey = '', $additionalProperties = array(), ?array $headers = null)
     {
         if ($this->autoSetupFabric) {
             $this->setupFabric();

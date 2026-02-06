@@ -59,7 +59,7 @@ abstract class BaseAmqp
      * @param AMQPChannel|null $ch
      * @param null             $consumerTag
      */
-    public function __construct(AbstractConnection $conn, AMQPChannel $ch = null, $consumerTag = null)
+    public function __construct(AbstractConnection $conn, ?AMQPChannel $ch = null, $consumerTag = null)
     {
         $this->conn = $conn;
         $this->ch = $ch;
