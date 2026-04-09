@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
@@ -38,8 +38,8 @@ class OldSoundRabbitMqExtension extends Extension
     {
         $this->container = $container;
 
-        $loader = new XmlFileLoader($this->container, new FileLocator(array(__DIR__.'/../Resources/config')));
-        $loader->load('rabbitmq.xml');
+        $loader = new YamlFileLoader($this->container, new FileLocator(array(__DIR__.'/../Resources/config')));
+        $loader->load('rabbitmq.yaml');
 
         $configuration = $this->getConfiguration($configs, $container);
         $this->config  = $this->processConfiguration($configuration, $configs);
